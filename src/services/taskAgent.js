@@ -1,6 +1,6 @@
 import { getWorkingModel } from './aiService'
-
 import { sendEmail } from './emailService'
+import { createTask } from './taskService'
 
 export async function createAndAssignTask(taskDescription, employees, setEmployees) {
   try {
@@ -30,6 +30,9 @@ Analyze and return ONLY the best employee name who should get this task based on
     )
     
     if (employee) {
+      // Store task in Google Sheets
+      await createTask(taskDescription, employee.name)
+      
       setEmployees(prev => prev.map(emp => 
         emp.id === employee.id 
           ? { 
@@ -40,44 +43,7 @@ Analyze and return ONLY the best employee name who should get this task based on
           : emp
       ))
       
-      // Send task assignment email
-      const emailBody = `🎯 NEW TASK ASSIGNMENT
-
-📋 Task: ${taskDescription}
-👤 Assigned to: ${employee.name}
-🏢 Role: ${employee.role}
-📊 Current Tasks: ${employee.tasks + 1}
-⚡ Status: ${employee.tasks >= 10 ? 'Overloaded' : employee.tasks >= 7 ? 'Busy' : 'Available'}
-
-📈 PROJECT OVERVIEW:
-Zoho Smart Client & Schedule Manager - Employee Management System
-
-🎯 Project Goals:
-• Intelligent task assignment based on skills and workload
-• Real-time employee performance monitoring
-• Automated workflow management
-• Team productivity optimization
-
-💼 System Features:
-• AI-powered task distribution
-• Employee availability tracking
-• Performance analytics dashboard
-• Automated email notifications
-
-📊 Current Team Status:
-${employees.map(emp => `• ${emp.name} (${emp.role}): ${emp.tasks} tasks - ${emp.availability}`).join('\n')}
-
-⏰ Assignment Time: ${new Date().toLocaleString()}
-
-Please acknowledge receipt and begin work on this task.`
-      
-      await sendEmail({
-        to: 'siranjeevan20@gmail.com',
-        subject: `Task Assignment: ${taskDescription}`,
-        body: emailBody
-      })
-      
-      return `✅ **Task Created & Assigned**\n\n**Task:** ${taskDescription}\n**Assigned to:** ${employee.name}\n**New task count:** ${employee.tasks + 1}\n📧 **Email sent to siranjeevan20@gmail.com**`
+      return `✅ **Task Created & Assigned**\n\n**Task:** ${taskDescription}\n**Assigned to:** ${employee.name}\n**New task count:** ${employee.tasks + 1}\n\n📧 **Send email notification?** Type 'yes' to send email to siranjeevan20@gmail.com`
     }
     
     return "❌ Could not assign task - no suitable employee found"

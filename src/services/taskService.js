@@ -1,22 +1,86 @@
 const SHEET_API_URL = 'https://api.sheetapi.rest/api/v1/sheets/yz962vnf0i5l2ckhfvf013cz'
+const FALLBACK_API_URL = 'https://sheetdb.io/api/v1/vfw6opo9eet4z'
+//https://api.sheetapi.rest/api/v1/sheets/yz962vnf0i5l2ckhfvf013cz
 
 export async function fetchTasks() {
+  // Try primary API first
   try {
     const response = await fetch(SHEET_API_URL)
-    const data = await response.json()
-    
-    return data.map((item, index) => ({
-      id: index + 1,
-      title: item['Task '] || item.Task,
-      status: item.Status === 'TRUE' ? 'Completed' : 'Pending',
-      person: item.Person || '',
-      priority: 'Medium',
-      deadline: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    }))
+    if (response.ok) {
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        return data.map((item, index) => ({
+          id: index + 1,
+          title: item['Task '] || item.Task,
+          status: item.Status === 'TRUE' ? 'Completed' : 'Pending',
+          person: item.Person || '',
+          priority: 'Medium',
+          deadline: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        }))
+      }
+    }
   } catch (error) {
-    console.error('Error fetching tasks:', error)
-    return []
+    console.warn('Primary API failed:', error.message)
   }
+  
+  // Try fallback API
+  try {
+    console.log('🔄 Fallback API is being called - Primary API failed')
+    const response = await fetch(FALLBACK_API_URL)
+    if (response.ok) {
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        return data.map((item, index) => ({
+          id: index + 1,
+          title: item['Task '] || item.Task,
+          status: item.Status === 'TRUE' ? 'Completed' : 'Pending',
+          person: item.Person || '',
+          priority: 'Medium',
+          deadline: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        }))
+      }
+    }
+  } catch (error) {
+    console.error('Fallback API failed:', error.message)
+  }
+  
+  // Return empty array if both fail
+  return []
+}
+
+export async function createTask(taskTitle, assignedPerson) {
+  const taskData = {
+    'Status': 'FALSE',
+    'Task': taskTitle,
+    'Person': assignedPerson
+  }
+  
+  console.log('📝 Creating task:', taskData)
+  
+  try {
+    const response = await fetch(SHEET_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(taskData)
+    })
+    
+    console.log('📡 Response status:', response.status)
+    const responseText = await response.text()
+    console.log('📡 Response body:', responseText)
+    
+    if (response.ok) {
+      console.log('✅ Task created successfully in Google Sheets')
+      return true
+    } else {
+      console.error('❌ API Error:', response.status, responseText)
+    }
+  } catch (error) {
+    console.error('❌ Network error:', error.message)
+  }
+  
+  return false
 }
 
 export function getEmployeeTaskCount(employeeName, allTasks) {
