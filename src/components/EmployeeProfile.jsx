@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { fetchTasks } from '../services/taskService'
 
 const EmployeeProfile = ({ employee, setSelectedEmployee, employees, setEmployees }) => {
+  const navigate = useNavigate()
   const [editMode, setEditMode] = useState(false)
   const [editData, setEditData] = useState({
     name: employee.name,
@@ -39,7 +41,10 @@ const EmployeeProfile = ({ employee, setSelectedEmployee, employees, setEmployee
   return (
     <div className="employee-profile">
       <div className="profile-header">
-        <button className="back-btn" onClick={() => setSelectedEmployee(null)}>
+        <button className="back-btn" onClick={() => {
+          setSelectedEmployee(null)
+          navigate('/employees')
+        }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15,18 9,12 15,6"/>
           </svg>

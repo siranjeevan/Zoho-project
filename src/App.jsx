@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import './App.css'
 import Sidebar from './components/Sidebar'
-import TopBar from './components/TopBar'
+
 import Chat from './components/Chat'
 import Dashboard from './components/Dashboard'
 import Employees from './components/Employees'
@@ -101,6 +101,12 @@ function App() {
     setSelectedEmployee(employee)
   }
 
+  const handleUpdateEmployee = (updatedEmployee) => {
+    setEmployees(prev => prev.map(emp => 
+      emp.id === updatedEmployee.id ? updatedEmployee : emp
+    ))
+  }
+
 
 
   return (
@@ -109,8 +115,6 @@ function App() {
         <Sidebar />
         
         <div className="main-content">
-          <TopBar />
-          
           <div className="content-area">
             <Routes>
               <Route path="/" element={<Navigate to="/chat" replace />} />
@@ -130,7 +134,7 @@ function App() {
                     employee={selectedEmployee} 
                     setSelectedEmployee={setSelectedEmployee}
                     employees={employees}
-                    setEmployees={setEmployees}
+                    setEmployees={handleUpdateEmployee}
                   />
                 ) : <Navigate to="/employees" replace />
               } />

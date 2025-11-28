@@ -1,4 +1,7 @@
+import { useNavigate } from 'react-router-dom'
+
 const Employees = ({ employees, setShowAddModal, handleDeleteEmployee, handleViewEmployee }) => {
+  const navigate = useNavigate()
   return (
     <div className="employees-section">
       <div className="section-header">
@@ -57,7 +60,10 @@ const Employees = ({ employees, setShowAddModal, handleDeleteEmployee, handleVie
                   <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
               </button>
-              <button className="action-btn view" onClick={() => handleViewEmployee(employee)}>
+              <button className="action-btn view" onClick={() => {
+                handleViewEmployee(employee)
+                navigate(`/employees/${employee.id}`)
+              }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                   <circle cx="12" cy="12" r="3"/>

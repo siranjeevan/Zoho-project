@@ -42,6 +42,17 @@ const Sidebar = () => {
           Task Assignment
         </Link>
       </nav>
+      
+      <div className="sidebar-footer">
+        <Link to="/chat" className="zoho-brand-button">
+          <div className="zoho-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span className="zoho-name">Zoho</span>
+        </Link>
+      </div>
     </div>
   )
 }

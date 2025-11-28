@@ -91,8 +91,22 @@ const Chat = ({ employees, setEmployees }) => {
       
       const isEmailRequest = userMessage.toLowerCase().includes('send email') || userMessage.toLowerCase().includes('send mail') || userMessage.toLowerCase().includes('email') && (userMessage.toLowerCase().includes('send') || userMessage.toLowerCase().includes('mail'))
       
+      const isGreeting = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'].some(greeting => 
+        userMessage.toLowerCase().trim() === greeting
+      )
+      
       let prompt
-      if (isTaskAssignment) {
+      if (isGreeting) {
+        const greetingResponses = [
+          '🚀 Welcome to Zoho\'s AI-powered workforce optimization! I\'m here to revolutionize your team management experience.',
+          '⚡ Greetings! Your intelligent employee management assistant is ready to maximize productivity and streamline operations.',
+          '🎯 Hello! Let\'s unlock your team\'s full potential with data-driven insights and smart task allocation.',
+          '💼 Welcome! I\'m your advanced AI consultant for strategic workforce management and performance optimization.'
+        ]
+        const randomResponse = greetingResponses[Math.floor(Math.random() * greetingResponses.length)]
+        setChatHistory(prev => prev.slice(0, -1).concat({ type: 'ai', message: randomResponse }))
+        return
+      } else if (isTaskAssignment) {
         setPendingTask(userMessage)
         prompt = `${context}\n\nTask request: "${userMessage}"\n\nYou must respond in this EXACT format:\n\n**Task:** [clear task name]\n**Skills Needed:** [list required skills]\n**Best Match:** [employee name] ([role]) - [reason based on skills and availability]\n\nShould I create and assign this task? Reply 'yes' to confirm.`
       } else if (isEmailRequest) {
@@ -104,7 +118,7 @@ const Chat = ({ employees, setEmployees }) => {
           prompt = `Email request: "${userMessage}"\n\nI need more details. Please provide:\n- Recipient email address\n- Subject (if not provided, I'll generate one)\n- Message content`
         }
       } else {
-        prompt = `${context}\n\nUser: ${userMessage}\n\nGive a short, helpful response about the team. Be direct and simple.`
+        prompt = `${context}\n\nConversation history:\n${conversationHistory}\n\nUser: ${userMessage}\n\nGive a short, direct answer. Use simple sentences. Be brief and to the point. Don't explain too much. If appropriate, also provide 1-2 helpful suggestions or recommendations.`
       }
       
       const result = await model.generateContent(prompt)
@@ -173,7 +187,10 @@ const Chat = ({ employees, setEmployees }) => {
   }
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesEndRef.current?.parentElement
+    if (container) {
+      container.scrollTop = container.scrollHeight
+    }
   }, [chatHistory])
 
   if (loading) {
@@ -207,49 +224,72 @@ const Chat = ({ employees, setEmployees }) => {
   }
 
   return (
-    <div className="chat-container">
-      <div className="chat-header">
-        <h1>AI Assistant</h1>
-        <p>Get intelligent help with employee management and task assignments</p>
+    <div className="ai-chat-wrapper">
+      <div className="ai-chat-header">
+        <div className="ai-header-content">
+          <div className="ai-avatar-large">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div className="ai-header-text">
+            <h1>Zoho AI Assistant</h1>
+            <p>Intelligent Employee & Task Management</p>
+          </div>
+        </div>
         <button className="clear-chat-btn" onClick={() => {
           localStorage.removeItem('chatHistory')
           setChatHistory([{ type: 'ai', message: 'Hello! I\'m your AI assistant for employee management. How can I assist you today?' }])
         }}>
-          Clear Chat
-        </button>
-      </div>
-      
-      <div className="chat-messages">
-        {chatHistory.map((msg, index) => (
-          <div key={index} className={`message ${msg.type}`}>
-            <div className="message-avatar">
-              {msg.type === 'ai' ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="5"/>
-                  <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
-                </svg>
-              ) : 'You'}
-            </div>
-            <div className="message-content" dangerouslySetInnerHTML={{ __html: formatMessage(msg.message) }}></div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-      
-      <form className="chat-input" onSubmit={handleChatSubmit}>
-        <input
-          type="text"
-          value={chatMessage}
-          onChange={(e) => setChatMessage(e.target.value)}
-          placeholder="Ask about employees, tasks, or team management..."
-        />
-        <button type="submit">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="3,6 5,6 21,6"/>
+            <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
           </svg>
+          Clear
         </button>
-      </form>
+      </div>
+      
+      <div className="ai-chat-body">
+        <div className="ai-messages-container">
+          {chatHistory.map((msg, index) => (
+            <div key={index} className={`ai-message ${msg.type}`}>
+              <div className="ai-message-avatar">
+                {msg.type === 'ai' ? (
+                  <div className="ai-bot-avatar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="ai-user-avatar">You</div>
+                )}
+              </div>
+              <div className="ai-message-bubble" dangerouslySetInnerHTML={{ __html: formatMessage(msg.message) }}></div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+        
+        <div className="ai-input-section">
+          <form className="ai-input-form" onSubmit={handleChatSubmit}>
+            <div className="ai-input-wrapper">
+              <input
+                type="text"
+                value={chatMessage}
+                onChange={(e) => setChatMessage(e.target.value)}
+                placeholder="Type your message here..."
+                className="ai-input-field"
+              />
+              <button type="submit" className="ai-send-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }
