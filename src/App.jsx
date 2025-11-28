@@ -110,7 +110,7 @@ function App() {
 
 
   return (
-    <Router basename="/Zoho-project">
+    <Router>
       <div className="app">
         <Sidebar />
         
