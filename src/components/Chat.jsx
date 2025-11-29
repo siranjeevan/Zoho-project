@@ -11,14 +11,21 @@ const Chat = ({ employees, setEmployees }) => {
   const [error, setError] = useState(null)
   const [pendingTask, setPendingTask] = useState(null)
   const [pendingEmail, setPendingEmail] = useState(null)
+  const [isInIframe, setIsInIframe] = useState(false)
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
+    // Detect if running in iframe (Zoho Cliq)
+    setIsInIframe(window.self !== window.top)
+    
     const savedHistory = localStorage.getItem('chatHistory')
     if (savedHistory) {
       setChatHistory(JSON.parse(savedHistory))
     } else {
-      setChatHistory([{ type: 'ai', message: 'Hello! I\'m your AI assistant for employee management. I can help you assign tasks, check employee workloads, and manage your team efficiently. How can I assist you today?' }])
+      const welcomeMessage = window.self !== window.top 
+        ? 'Hello! I\'m your Zoho Cliq AI assistant for employee management. How can I help you today?'
+        : 'Hello! I\'m your AI assistant for employee management. I can help you assign tasks, check employee workloads, and manage your team efficiently. How can I assist you today?'
+      setChatHistory([{ type: 'ai', message: welcomeMessage }])
     }
   }, [])
 

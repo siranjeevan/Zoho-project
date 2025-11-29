@@ -1,0 +1,36 @@
+{
+  "name": "Employee Management AI Assistant",
+  "description": "AI-powered employee management system with task assignment and chat capabilities",
+  "version": "1.0.0",
+  "developer": {
+    "name": "Your Company",
+    "email": "siranjeevan20@gmail.com"
+  },
+  "widgets": [
+    {
+      "name": "AI Assistant Chat",
+      "url": "https://zoho-project-murex.vercel.app/chat",
+      "type": "applet",
+      "context": [
+        {
+          "type": "chat"
+        }
+      ]
+    }
+  ],
+  "bots": [
+    {
+      "name": "Employee Management Bot",
+      "unique_name": "employee_mgmt_bot",
+      "description": "AI assistant for employee management and task assignment",
+      "webhook": "https://zoho-project-murex.vercel.app/chat"
+    }
+  ],
+  "oauth": {
+    "redirect_url": "https://zoho-project-murex.vercel.app/auth/callback",
+    "scopes": [
+      "ZohoCliq.Webhooks.CREATE",
+      "ZohoCliq.Channels.READ"
+    ]
+  }
+}

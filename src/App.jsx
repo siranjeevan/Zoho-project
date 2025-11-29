@@ -9,6 +9,7 @@ import Employees from './components/Employees'
 import AddEmployeeModal from './components/AddEmployeeModal'
 import DeleteModal from './components/DeleteModal'
 import EmployeeProfile from './components/EmployeeProfile'
+import AuthCallback from './components/AuthCallback'
 import { useTasks } from './hooks/useTasks'
 
 function App() {
@@ -119,6 +120,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Navigate to="/chat" replace />} />
               <Route path="/chat" element={<Chat employees={employees} setEmployees={setEmployees} />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/dashboard" element={<Dashboard employees={employees} allTasks={allTasks} />} />
               <Route path="/employees" element={
                 <Employees 
