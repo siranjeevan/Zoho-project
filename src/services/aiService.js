@@ -1,6 +1,10 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+const PRIMARY_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const FALLBACK_API_KEY = import.meta.env.VITE_GEMINI_FALLBACK_API_KEY;
+
+let genAI = new GoogleGenerativeAI(PRIMARY_API_KEY);
+let usingFallback = false;
 
 export const MODEL_CANDIDATES = [
   "gemini-2.5-flash",
@@ -20,8 +24,26 @@ export async function getWorkingModel(candidates = MODEL_CANDIDATES) {
       });
       await model.generateContent("test");
       return model;
-    } catch {
+    } catch (error) {
       console.warn(`Model failed: ${modelName}`);
+      if (!usingFallback && error.status === 403) {
+        console.log("Switching to fallback API key");
+        genAI = new GoogleGenerativeAI(FALLBACK_API_KEY);
+        usingFallback = true;
+        try {
+          const fallbackModel = genAI.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+              temperature: 0.7,
+              responseMimeType: "text/plain",
+            },
+          });
+          await fallbackModel.generateContent("test");
+          return fallbackModel;
+        } catch {
+          console.warn(`Fallback also failed for: ${modelName}`);
+        }
+      }
     }
   }
   throw new Error("No working Gemini model found");
