@@ -1,10 +1,33 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const PRIMARY_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const FALLBACK_API_KEY = import.meta.env.VITE_GEMINI_FALLBACK_API_KEY;
+const ENV_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const ENV_FALLBACK_API_KEY = import.meta.env.VITE_GEMINI_FALLBACK_API_KEY;
 
-let genAI = new GoogleGenerativeAI(PRIMARY_API_KEY);
-let usingFallback = false;
+export const getStoredApiKey = () => localStorage.getItem("GEMINI_API_KEY");
+export const setStoredApiKey = (key) => {
+  localStorage.setItem("GEMINI_API_KEY", key);
+  // Re-initialize the instance
+  initGenAI();
+};
+
+export const hasApiKey = () => {
+  const key = getStoredApiKey() || ENV_API_KEY;
+  return key && key !== "ID_OF_THE_GEMINI_API_KEY";
+};
+
+let genAI = null;
+
+const initGenAI = () => {
+  const key = getStoredApiKey() || ENV_API_KEY;
+  if (key && key !== "ID_OF_THE_GEMINI_API_KEY") {
+    genAI = new GoogleGenerativeAI(key);
+  } else if (ENV_FALLBACK_API_KEY) {
+     genAI = new GoogleGenerativeAI(ENV_FALLBACK_API_KEY);
+  }
+};
+
+// Initial setup
+initGenAI();
 
 export const MODEL_CANDIDATES = [
   "gemini-2.5-flash",
@@ -13,6 +36,13 @@ export const MODEL_CANDIDATES = [
 ];
 
 export async function getWorkingModel(candidates = MODEL_CANDIDATES) {
+  if (!genAI) {
+      initGenAI();
+      if (!genAI) {
+          throw new Error("MISSING_API_KEY");
+      }
+  }
+
   for (const modelName of candidates) {
     try {
       const model = genAI.getGenerativeModel({
@@ -22,31 +52,16 @@ export async function getWorkingModel(candidates = MODEL_CANDIDATES) {
           responseMimeType: "text/plain",
         },
       });
+      // Lightweight test to verify model access
       await model.generateContent("test");
       return model;
     } catch (error) {
-      console.warn(`Model failed: ${modelName}`);
-      if (!usingFallback && error.status === 403) {
-        console.log("Switching to fallback API key");
-        genAI = new GoogleGenerativeAI(FALLBACK_API_KEY);
-        usingFallback = true;
-        try {
-          const fallbackModel = genAI.getGenerativeModel({
-            model: modelName,
-            generationConfig: {
-              temperature: 0.7,
-              responseMimeType: "text/plain",
-            },
-          });
-          await fallbackModel.generateContent("test");
-          return fallbackModel;
-        } catch {
-          console.warn(`Fallback also failed for: ${modelName}`);
-        }
-      }
+      console.warn(`Model failed: ${modelName}`, error);
+      // If 403 (Permission denied) or 400 (Bad Request - often key related), 
+      // it might be an invalid key, but we iterate through models first.
     }
   }
-  throw new Error("No working Gemini model found");
+  throw new Error("No working Gemini model found. Please check your API key.");
 }
 
 export async function generateAIResponse(message, employees) {
@@ -68,6 +83,9 @@ export async function generateAIResponse(message, employees) {
     return result.response.text();
   } catch (error) {
     console.error('AI Error:', error);
-    return "I'm having trouble connecting right now. Please try again in a moment.";
+    if (error.message === "MISSING_API_KEY" || error.message.includes("API key")) {
+        return "MISSING_API_KEY"; // Special signal to UI
+    }
+    return "I'm having trouble connecting right now. Please try again in a moment. (" + error.message + ")";
   }
 }

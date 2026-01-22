@@ -10,7 +10,9 @@ import AddEmployeeModal from './components/AddEmployeeModal'
 import DeleteModal from './components/DeleteModal'
 import EmployeeProfile from './components/EmployeeProfile'
 import AuthCallback from './components/AuthCallback'
+import ApiKeyModal from './components/ApiKeyModal'
 import { useTasks } from './hooks/useTasks'
+import { hasApiKey } from './services/aiService'
 
 function App() {
   const { allTasks, pendingTasksCount, getEmployeeTaskCount, calculatePerformance, getEmployeeStatus, loading: tasksLoading } = useTasks()
@@ -18,6 +20,7 @@ function App() {
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false)
   const [employeeToDelete, setEmployeeToDelete] = useState(null)
   const getEmployeePendingTasks = (employeeName) => {
     if (!allTasks || allTasks.length === 0) return 0
@@ -31,7 +34,7 @@ function App() {
     { id: 4, name: 'Lisa Wang', email: 'lisa.wang@company.com', role: 'Marketing Specialist', department: 'Marketing', tasks: 0, availability: 'Available', performance: 90, skills: ['SEO', 'Content'] },
     { id: 5, name: 'David Chen', email: 'david.chen@company.com', role: 'DevOps Engineer', department: 'Engineering', tasks: 0, availability: 'Available', performance: 94, skills: ['AWS', 'Docker'] }
   ]
-  
+
   const [employees, setEmployees] = useState(() => {
     const saved = localStorage.getItem('employees')
     if (saved) {
@@ -53,12 +56,19 @@ function App() {
   }, [employees])
 
   useEffect(() => {
+    // Check for API Key on initial load
+    if (!hasApiKey()) {
+      setShowApiKeyModal(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!tasksLoading) {
       setEmployees(prev => prev.map(emp => {
         const pendingTasks = getEmployeePendingTasks(emp.name)
         const performance = allTasks.length > 0 ? calculatePerformance(emp.name, allTasks) : emp.performance
         const availability = allTasks.length > 0 ? getEmployeeStatus(emp.name, allTasks) : emp.availability
-        
+
         return {
           ...emp,
           tasks: pendingTasks,
@@ -103,7 +113,7 @@ function App() {
   }
 
   const handleUpdateEmployee = (updatedEmployee) => {
-    setEmployees(prev => prev.map(emp => 
+    setEmployees(prev => prev.map(emp =>
       emp.id === updatedEmployee.id ? updatedEmployee : emp
     ))
   }
@@ -114,7 +124,7 @@ function App() {
     <Router>
       <div className="app">
         <Sidebar />
-        
+
         <div className="main-content">
           <div className="content-area">
             <Routes>
@@ -123,8 +133,8 @@ function App() {
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/dashboard" element={<Dashboard employees={employees} allTasks={allTasks} />} />
               <Route path="/employees" element={
-                <Employees 
-                  employees={employees} 
+                <Employees
+                  employees={employees}
                   setShowAddModal={setShowAddModal}
                   handleDeleteEmployee={handleDeleteEmployee}
                   handleViewEmployee={handleViewEmployee}
@@ -132,8 +142,8 @@ function App() {
               } />
               <Route path="/employees/:id" element={
                 selectedEmployee ? (
-                  <EmployeeProfile 
-                    employee={selectedEmployee} 
+                  <EmployeeProfile
+                    employee={selectedEmployee}
                     setSelectedEmployee={setSelectedEmployee}
                     employees={employees}
                     setEmployees={handleUpdateEmployee}
@@ -147,16 +157,21 @@ function App() {
                 </div>
               } />
             </Routes>
-            
-            <AddEmployeeModal 
+
+            <ApiKeyModal
+              show={showApiKeyModal}
+              onClose={() => setShowApiKeyModal(false)}
+            />
+
+            <AddEmployeeModal
               showAddModal={showAddModal}
               setShowAddModal={setShowAddModal}
               newEmployee={newEmployee}
               setNewEmployee={setNewEmployee}
               handleAddEmployee={handleAddEmployee}
             />
-            
-            <DeleteModal 
+
+            <DeleteModal
               showDeleteModal={showDeleteModal}
               setShowDeleteModal={setShowDeleteModal}
               employeeToDelete={employeeToDelete}
