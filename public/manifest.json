@@ -1,14 +1,14 @@
 {
-  "name": "Employee Management AI Assistant",
-  "description": "AI-powered employee management system with task assignment and chat capabilities",
+  "name": "Smart Manager",
+  "description": "AI-powered Smart Manager for employee management and tasks",
   "version": "1.0.0",
   "developer": {
-    "name": "Your Company",
+    "name": "Smart Manager Team",
     "email": "siranjeevan20@gmail.com"
   },
   "widgets": [
     {
-      "name": "AI Assistant Chat",
+      "name": "Smart Manager Chat",
       "url": "https://zoho-project-flax.vercel.app/chat",
       "type": "applet",
       "context": [
@@ -20,7 +20,7 @@
   ],
   "bots": [
     {
-      "name": "Employee Management Bot",
+      "name": "Smart Manager Bot",
       "unique_name": "employee_mgmt_bot",
       "description": "AI assistant for employee management and task assignment",
       "webhook": "https://zoho-project-flax.vercel.app/chat"
