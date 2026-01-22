@@ -9,7 +9,7 @@
   "widgets": [
     {
       "name": "AI Assistant Chat",
-      "url": "https://zoho-project-murex.vercel.app/chat",
+      "url": "https://siranjeevan.github.io/Zoho-project/#/chat",
       "type": "applet",
       "context": [
         {
@@ -23,11 +23,11 @@
       "name": "Employee Management Bot",
       "unique_name": "employee_mgmt_bot",
       "description": "AI assistant for employee management and task assignment",
-      "webhook": "https://zoho-project-murex.vercel.app/chat"
+      "webhook": "https://siranjeevan.github.io/Zoho-project/#/chat"
     }
   ],
   "oauth": {
-    "redirect_url": "https://zoho-project-murex.vercel.app/auth/callback",
+    "redirect_url": "https://siranjeevan.github.io/Zoho-project/#/auth/callback",
     "scopes": [
       "ZohoCliq.Webhooks.CREATE",
       "ZohoCliq.Channels.READ"
